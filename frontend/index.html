@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusBus AI — Smart College Bus Tracking</title>
+  
+  <!-- Inter Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet.js Map CSS (Free, Open-Source) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo-icon">🚌</div>
+      <div class="brand-text">
+        <h1>CampusBus AI</h1>
+        <span class="sub-text">College Transit & Student Assistance</span>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <div class="live-pill">
+        <span class="pulse-dot"></span>
+        <span id="liveStatusText">Live Feed Active</span>
+      </div>
+      <div class="clock" id="liveClock">--:--:--</div>
+      <button id="btnRefresh" class="btn-secondary" title="Refresh Live Bus Data">🔄 Refresh</button>
+    </div>
+  </header>
+
+  <!-- Main Application Container -->
+  <main class="app-container">
+    
+    <!-- Left Sidebar: Bus List & Route Schedules -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Active College Buses</h2>
+        <span class="badge-count" id="busCountBadge">3 Active</span>
+      </div>
+
+      <!-- Quick Search / Filter -->
+      <div class="search-box">
+        <input 
+          type="text" 
+          id="busSearchInput" 
+          placeholder="Search bus number, route or stop..." 
+        />
+      </div>
+
+      <!-- Bus Cards List -->
+      <div class="bus-list" id="busListContainer">
+        <!-- Rendered dynamically by app.js -->
+        <div class="loading-state">Loading active bus fleet...</div>
+      </div>
+
+      <!-- Selected Bus Route Timeline Detail -->
+      <div class="route-details-panel" id="routeDetailsPanel" style="display: none;">
+        <div class="panel-header">
+          <h3 id="panelRouteTitle">Route Timeline</h3>
+          <button class="btn-close-sm" id="btnClosePanel">✕</button>
+        </div>
+        <div class="stops-timeline" id="stopsTimelineContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Campus Info Footer in Sidebar -->
+      <div class="campus-card">
+        <div class="campus-icon">🏛️</div>
+        <div>
+          <h4>Destination: Main Campus Gate</h4>
+          <p>College Timings: 08:30 AM – 04:30 PM</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Side: Interactive Leaflet Map -->
+    <section class="map-section">
+      <div id="map" class="map-view"></div>
+
+      <!-- Floating Map Controls Overlay -->
+      <div class="map-overlay-controls">
+        <button id="btnCenterCampus" class="map-ctrl-btn" title="Center on Campus">🏛️ Campus</button>
+        <button id="btnFitAllBuses" class="map-ctrl-btn" title="View All Buses">🎯 Fit All Buses</button>
+      </div>
+
+      <!-- Map Legend -->
+      <div class="map-legend">
+        <div class="legend-item"><span class="legend-icon bus-legend"></span> Active Bus</div>
+        <div class="legend-item"><span class="legend-icon stop-legend"></span> Bus Stop</div>
+        <div class="legend-item"><span class="legend-icon campus-legend"></span> Campus Gate</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Floating Chatbot Widget (Bottom-Right) -->
+  <div class="chatbot-wrapper">
+    <!-- Chat Toggle Trigger Button -->
+    <button class="chat-toggle-btn" id="chatToggleBtn" aria-label="Open Bus AI Assistant">
+      <span class="chat-btn-icon">💬</span>
+      <span class="chat-btn-text">Ask Bus AI</span>
+      <span class="chat-notification-badge" id="chatBadge">1</span>
+    </button>
+
+    <!-- Chat Modal / Drawer -->
+    <div class="chat-window" id="chatWindow" style="display: none;">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <div class="bot-avatar">🤖</div>
+          <div>
+            <h3>CampusBus Assistant</h3>
+            <span class="chat-lang-badge">English & Tanglish Supported</span>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <button id="btnClearChat" class="btn-icon" title="Clear chat">🗑️</button>
+          <button id="btnCloseChat" class="btn-icon" title="Close chat">✕</button>
+        </div>
+      </div>
+
+      <!-- Suggestion Quick Chips -->
+      <div class="quick-chips">
+        <button class="chip" data-query="Where is Bus 12?">Bus 12 enge?</button>
+        <button class="chip" data-query="When will Bus 7 arrive?">Bus 7 eppo varum?</button>
+        <button class="chip" data-query="Which bus goes to Chromepet?">Chromepet bus</button>
+        <button class="chip" data-query="List all buses">Show all buses</button>
+      </div>
+
+      <!-- Messages Body -->
+      <div class="chat-messages" id="chatMessages">
+        <!-- Rendered by chat.js -->
+      </div>
+
+      <!-- Message Input Form -->
+      <form class="chat-input-bar" id="chatForm">
+        <input 
+          type="text" 
+          id="chatInput" 
+          placeholder="Ask in English or Tanglish (e.g., Bus 12 enge?)..." 
+          autocomplete="off"
+          required 
+        />
+        <button type="submit" class="btn-send" id="btnSend">
+          <span>➤</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Leaflet JS CDN -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <!-- Application Scripts -->
+  <script src="js/map.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
